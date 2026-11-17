@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLOps Pipeline — Complete Guide</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3350;
+    --accent: #5b8dee;
+    --accent2: #3ecf8e;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --code-bg: #0d1117;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 260px;
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 24px 0;
+    z-index: 100;
+  }
+  .sidebar h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 0 20px 8px;
+    margin-bottom: 4px;
+  }
+  .sidebar a {
+    display: block;
+    padding: 6px 20px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar a:hover, .sidebar a.active {
+    color: var(--text);
+    border-left-color: var(--accent);
+    background: var(--surface2);
+  }
+  .sidebar .section-sep { margin: 16px 0 8px; }
+  main {
+    margin-left: 260px;
+    max-width: 900px;
+    padding: 48px 48px 80px;
+  }
+  .hero {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 36px 40px;
+    margin-bottom: 48px;
+  }
+  .hero h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .hero .sub {
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+  .hero p { color: var(--muted); max-width: 680px; margin-bottom: 0; }
+  .cost-box { display: flex; gap: 16px; margin-top: 20px; }
+  .cost-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    flex: 1;
+  }
+  .cost-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .cost-card .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .cost-card.danger .value { color: var(--danger); }
+  .cost-card.ok .value { color: var(--accent2); }
+  h2.section {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin: 48px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 80px;
+  }
+  h3.subsection {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 28px 0 10px;
+    scroll-margin-top: 80px;
+  }
+  p { margin-bottom: 12px; color: var(--muted); }
+  p strong { color: var(--text); }
+  a { color: var(--accent); }
+  code {
+    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #e2e8f0;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 13px;
+    color: #cdd9e5;
+    line-height: 1.65;
+  }
+  .kw { color: #ff7b72; }
+  .cm { color: #8b949e; }
+  .st { color: #a5d6ff; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 13.5px;
+  }
+  th {
+    background: var(--surface2);
+    color: var(--text);
+    text-align: left;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  td {
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    vertical-align: top;
+  }
+  td strong { color: var(--text); }
+  tr:hover td { background: var(--surface2); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge.green { background: rgba(62,207,142,0.15); color: var(--accent2); }
+  .badge.blue  { background: rgba(91,141,238,0.15); color: var(--accent); }
+  .badge.amber { background: rgba(245,158,11,0.15); color: var(--warn); }
+  .badge.red   { background: rgba(239,68,68,0.15);  color: var(--danger); }
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 13.5px;
+  }
+  .callout.warn  { border-left-color: var(--warn); }
+  .callout.green { border-left-color: var(--accent2); }
+  .callout.danger { border-left-color: var(--danger); }
+  .callout p { color: var(--text); margin: 0; }
+  .stat-row { display: flex; gap: 16px; margin: 20px 0; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    flex: 1;
+  }
+  .stat-card .s-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .stat-card .s-value { font-size: 20px; font-weight: 700; color: var(--text); }
+  .stat-card .s-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .stage-grid { display: grid; gap: 10px; margin: 16px 0; }
+  .stage-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .key-stage .stage-card { border-color: var(--accent); }
+  .stage-num {
+    background: var(--surface2);
+    color: var(--accent);
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    white-space: nowrap;
+    margin-top: 2px;
+    border: 1px solid var(--border);
+  }
+  .stage-body { flex: 1; }
+  .stage-title { color: var(--text); font-weight: 600; font-size: 13.5px; margin-bottom: 3px; }
+  .stage-desc { color: var(--muted); font-size: 13px; }
+  .run-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+  .run-section h4 { color: var(--text); font-size: 14px; margin-bottom: 12px; margin-top: 20px; }
+  .run-section h4:first-child { margin-top: 0; }
+  .strategy-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .strategy-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .strategy-name { color: var(--text); font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+  .strategy-card p { font-size: 12.5px; margin-bottom: 8px; }
+  .strategy-card .when { font-size: 11.5px; color: var(--accent2); font-weight: 600; }
+  .timeline {
+    display: flex;
+    gap: 0;
+    margin: 20px 0;
+    position: relative;
+  }
+  .tl-item {
+    flex: 1;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .tl-item:first-child { border-radius: 8px 0 0 8px; }
+  .tl-item:last-child { border-radius: 0 8px 8px 0; }
+  .tl-item + .tl-item { border-left: none; }
+  .tl-phase { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 4px; }
+  .tl-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .tl-detail { font-size: 12px; color: var(--muted); }
+  .tl-item.active { border-color: var(--accent); background: rgba(91,141,238,0.06); }
+  .tl-item.active .tl-phase { color: var(--accent); }
+  .tl-item.future { opacity: 0.55; }
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    main { margin-left: 0; padding: 24px; }
+    .strategy-grid { grid-template-columns: 1fr; }
+    .cost-box { flex-direction: column; }
+    .stat-row { flex-direction: column; }
+    .timeline { flex-direction: column; }
+    .tl-item:first-child { border-radius: 8px 8px 0 0; }
+    .tl-item:last-child { border-radius: 0 0 8px 8px; }
+    .tl-item + .tl-item { border-left: 1px solid var(--border); border-top: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <h2>MLOps Pipeline</h2>
+  <a href="#problem">Business Problem</a>
+  <a href="#dataset">Dataset</a>
+  <a href="#situation">The Situation</a>
+  <a href="#cost-model">Cost Model</a>
+  <a href="#quickstart">Quick Start</a>
+  <a href="#files">File Reference</a>
+  <div class="section-sep"><h2>Steps</h2></div>
+  <a href="#baseline">1 — baseline.py</a>
+  <a href="#model-selection">2 — model_selection.py</a>
+  <a href="#main">3 — main.py</a>
+  <a href="#stages">Pipeline Stages</a>
+  <a href="#retrain">4 — retrain.py</a>
+  <a href="#trigger-rules">Trigger Rules</a>
+  <a href="#strategies">Retrain Strategies</a>
+  <div class="section-sep"><h2>Serving</h2></div>
+  <a href="#realtime">Real-time API</a>
+  <a href="#batch">Batch Inference</a>
+  <div class="section-sep"><h2>Reference</h2></div>
+  <a href="#outputs">Output Files</a>
+  <a href="#production">Production Mapping</a>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="sub">upGrad MLOps — End-to-End Pipeline</div>
+    <h1>MLOps Pipeline<br>E-Commerce Purchase Prediction</h1>
+    <p>A complete production-grade ML system built in pure Python — no MLflow, no DVC, no cloud. Every concept is implemented from scratch: validation, versioning, drift detection, retraining, and serving. The goal is to show what these production tools actually do before you add them.</p>
+  </div>
+
+  <!-- BUSINESS PROBLEM -->
+  <h2 class="section" id="problem">Problem Statement</h2>
+
+  <h3 class="subsection">Business context</h3>
+  <p>An e-commerce retailer collects session-level data on every visitor — pages viewed, time spent, bounce and exit rates, whether the visit falls near a special day, and so on. Most visitors leave without buying. A small fraction complete a purchase. The business wants to know, <strong>at the end of a session</strong>, whether that visitor was a buyer — so it can score batches of sessions, identify patterns, and decide where to direct marketing spend.</p>
+
+  <h3 class="subsection">ML problem definition</h3>
+  <table>
+    <tr><th>Dimension</th><th>Definition</th></tr>
+    <tr><td><strong>Task</strong></td><td>Binary classification</td></tr>
+    <tr><td><strong>Input</strong></td><td>One row per browsing session — 18 features: page counts, durations, bounce/exit rates, PageValues, Month, VisitorType, SpecialDay, Weekend</td></tr>
+    <tr><td><strong>Output</strong></td><td>Predicted label: <code>Revenue = 1</code> (purchase) or <code>Revenue = 0</code> (no purchase), plus a purchase probability score</td></tr>
+    <tr><td><strong>Target variable</strong></td><td><code>Revenue</code> — boolean, converted to int. Positive class = session ended in a purchase</td></tr>
+    <tr><td><strong>Class distribution</strong></td><td>~12–15% positive (buyers). Strong imbalance — the majority class is always "no purchase"</td></tr>
+    <tr><td><strong>Primary metric</strong></td><td>F1 score on the minority class (buyers). Accuracy is misleading at this imbalance ratio</td></tr>
+    <tr><td><strong>Inference mode</strong></td><td>Batch scoring — sessions are scored as a batch after accumulation. A REST endpoint (<code>serve.py</code>) is also provided for on-demand single-session scoring</td></tr>
+  </table>
+
+  <h3 class="subsection">Why this is hard</h3>
+  <p>A model that predicts "no purchase" for every session achieves <strong>87% accuracy</strong> and catches zero buyers. The real challenge is the class imbalance: the minority class (buyers) is what the business cares about entirely, but it is the harder class to learn. A naive model optimised for accuracy will systematically ignore it.</p>
+  <p>The secondary challenge is <strong>distribution shift</strong>. The model is trained on sessions from February to October — normal shopping behaviour. It is then deployed into the holiday season (November–December), where purchase intent, page engagement, and session patterns all shift significantly. A model without monitoring will degrade silently.</p>
+
+  <!-- DATASET -->
+  <h2 class="section" id="dataset">Dataset</h2>
+  <p><strong>UCI Online Shoppers Purchasing Intention</strong> — Sakar et al. (2019). 12,330 real e-commerce sessions from a single retailer, each described by 18 features capturing navigation behaviour, timing, and visitor context.</p>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="s-label">Total Sessions</div>
+      <div class="s-value">12,330</div>
+      <div class="s-sub">Real browsing sessions, one retailer</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Features</div>
+      <div class="s-value">18</div>
+      <div class="s-sub">Navigation, timing, visitor type, recency</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Purchase Rate</div>
+      <div class="s-value">15.5%</div>
+      <div class="s-sub">Minority class — strong class imbalance</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">License</div>
+      <div class="s-value" style="font-size:15px;">CC BY 4.0</div>
+      <div class="s-sub">UCI ML Repository ID: 468</div>
+    </div>
+  </div>
+
+  <h3 class="subsection">Key features</h3>
+  <table>
+    <tr><th>Feature</th><th>Type</th><th>Why it matters</th></tr>
+    <tr><td><code>PageValues</code></td><td>Float</td><td>Average value of pages visited — strongest single predictor (&gt;35% feature importance)</td></tr>
+    <tr><td><code>ProductRelated</code></td><td>Integer</td><td>Number of product pages viewed — directly signals purchase intent</td></tr>
+    <tr><td><code>BounceRates</code></td><td>Float</td><td>Fraction of single-page sessions from this entry — low = engaged visitor</td></tr>
+    <tr><td><code>ExitRates</code></td><td>Float</td><td>Fraction of exits from this page — high = leaving soon</td></tr>
+    <tr><td><code>Month</code></td><td>Nominal</td><td>Seasonal patterns — holiday months behave very differently</td></tr>
+    <tr><td><code>VisitorType</code></td><td>Nominal</td><td>Returning vs new vs other — returning visitors convert at higher rates</td></tr>
+    <tr><td><code>SpecialDay</code></td><td>Float</td><td>Proximity to a special day (e.g. Mother's Day) — affects browsing urgency</td></tr>
+    <tr><td><code>Weekend</code></td><td>Boolean</td><td>Weekend sessions show different intent patterns than weekday</td></tr>
+  </table>
+  <p style="font-size:13px;">Reference: Sakar, C.O., Polat, S.O., Katircioglu, M. et al. (2019). <em>Real-time prediction of online shoppers' purchasing intention using multilayer perceptron and LSTM recurrent neural networks.</em> Neural Computing and Applications, 31(10), 6893–6908.</p>
+
+  <!-- THE SITUATION -->
+  <h2 class="section" id="situation">The Situation</h2>
+  <p>This project simulates a realistic deployment timeline. The data arrives in two phases, matching how data actually accumulates in production.</p>
+
+  <div class="timeline">
+    <div class="tl-item active">
+      <div class="tl-phase">Phase 1 — Training</div>
+      <div class="tl-label">February → October</div>
+      <div class="tl-detail">7,317 sessions. All the data the team has. The model is trained, validated, and deployed before the holiday season.</div>
+    </div>
+    <div class="tl-item active" style="border-color: var(--accent2);">
+      <div class="tl-phase" style="color: var(--accent2);">Phase 2 — Live Traffic</div>
+      <div class="tl-label">November → December</div>
+      <div class="tl-detail">4,725 sessions arrive post-deployment. Used for drift monitoring and batch scoring — not for training.</div>
+    </div>
+    <div class="tl-item future">
+      <div class="tl-phase">Phase 3 — Retrain Decision</div>
+      <div class="tl-label">Late November onward</div>
+      <div class="tl-detail">Drift triggers fire. Ground truth labels accumulate. Retraining is evaluated and executed with a chosen strategy.</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p>It is <strong>October</strong>. The data science team has <strong>7,317 sessions from February to October</strong>. The model must be built and deployed before the holiday season begins. November and December data is not yet available — it will arrive as live traffic after the model goes live.</p>
+  </div>
+
+  <h3 class="subsection">What changes in the holiday season</h3>
+  <table>
+    <tr><th>Feature</th><th>Feb–Oct (training)</th><th>Nov–Dec (post-deployment)</th><th>Shift</th></tr>
+    <tr><td><code>PageValues</code></td><td>5.3</td><td>7.0</td><td style="color: var(--danger);">+34%</td></tr>
+    <tr><td><code>ProductRelated</code></td><td>26.6</td><td>39.4</td><td style="color: var(--danger);">+48%</td></tr>
+    <tr><td><code>BounceRates</code></td><td>0.022</td><td>0.025</td><td style="color: var(--warn);">+16%</td></tr>
+    <tr><td><code>ExitRates</code></td><td>0.043</td><td>0.049</td><td style="color: var(--warn);">+12%</td></tr>
+    <tr><td>Purchase rate</td><td>12.3%</td><td>20.7%</td><td style="color: var(--danger);">+67%</td></tr>
+  </table>
+  <p>These four features drive over 60% of model importance. When they shift, the model trained on Feb–Oct behaviour faces a meaningfully different distribution. This is what triggers the drift response in Phase 3.</p>
+
+  <!-- COST MODEL -->
+  <h2 class="section" id="cost-model">Business Cost Model</h2>
+  <p>The choice of evaluation metric follows directly from the cost of each type of error. This is not an academic choice — it determines which model gets deployed.</p>
+
+  <div class="cost-box">
+    <div class="cost-card danger">
+      <div class="label">Missed Buyer (False Negative)</div>
+      <div class="value">$85</div>
+    </div>
+    <div class="cost-card ok">
+      <div class="label">Wasted Offer (False Positive)</div>
+      <div class="value">$3</div>
+    </div>
+    <div class="cost-card">
+      <div class="label">Cost Ratio FN : FP</div>
+      <div class="value" style="color: var(--warn)">28 : 1</div>
+    </div>
+  </div>
+
+  <p style="margin-top: 16px;">A model that misses a buyer costs <strong>28× more</strong> than one that wastes an offer on a non-buyer. This ratio directly shapes the pipeline:</p>
+  <ul style="color: var(--muted); padding-left: 20px; margin-bottom: 16px; font-size: 14px;">
+    <li style="margin-bottom: 6px;"><strong style="color: var(--text);">Primary metric:</strong> F1 on the minority class (buyers) — not accuracy</li>
+    <li style="margin-bottom: 6px;"><strong style="color: var(--text);">Class imbalance handling:</strong> <code>scale_pos_weight = n_negative / n_positive ≈ 7.1</code></li>
+    <li style="margin-bottom: 6px;"><strong style="color: var(--text);">Deployment gates:</strong> F1 ≥ 0.65, Recall ≥ 0.60, AUC-PR ≥ 0.60, AUC-ROC ≥ 0.85</li>
+    <li><strong style="color: var(--text);">Drift Rule 1:</strong> any high-importance feature shift triggers immediate retrain consideration</li>
+  </ul>
+  <div class="callout warn">
+    <p>A model with 88% accuracy that predicts "no purchase" for every session misses <em>every buyer</em>. On a test batch of 1,463 sessions with ~180 actual buyers, that is $15,300 in missed revenue — invisible unless you look past the accuracy number.</p>
+  </div>
+
+  <!-- QUICK START -->
+  <h2 class="section" id="quickstart">Quick Start</h2>
+  <div class="run-section">
+    <h4>Install dependencies</h4>
+    <pre><code>pip install -r requirements.txt</code></pre>
+    <h4>Run in order</h4>
+    <pre><code>python baseline.py          <span class="cm"># See what goes wrong without MLOps discipline</span>
+python model_selection.py   <span class="cm"># Rigorous model comparison — select the winner</span>
+python main.py              <span class="cm"># Build and deploy the production pipeline</span>
+python retrain.py --dry-run <span class="cm"># Evaluate drift — should we retrain?</span></code></pre>
+    <h4>After retraining (pick one strategy)</h4>
+    <pre><code>python retrain.py --strategy mixed          <span class="cm"># recommended for seasonal drift</span>
+python retrain.py --strategy finetune       <span class="cm"># fast warm-start</span>
+python retrain.py --strategy reexperiment   <span class="cm"># full hyperparameter search</span></code></pre>
+    <h4>Serve the model</h4>
+    <pre><code>uvicorn serve:app --reload --port 8000      <span class="cm"># REST API — open /docs</span>
+python batch_infer.py                       <span class="cm"># score the Nov-Dec batch CSV</span>
+python plot_logs.py                         <span class="cm"># HTML log visualizer — opens in browser</span></code></pre>
+  </div>
+
+  <!-- FILE REFERENCE -->
+  <h2 class="section" id="files">File Reference</h2>
+  <table>
+    <tr><th>File</th><th>What it does</th></tr>
+    <tr><td><code>baseline.py</code></td><td>First-pass analysis — demonstrates 7 common pitfalls</td></tr>
+    <tr><td><code>model_selection.py</code></td><td>Rigorous 4-model comparison — produces the model selection audit trail</td></tr>
+    <tr><td><code>main.py</code></td><td>Entry point — runs the full 12-stage production pipeline</td></tr>
+    <tr><td><code>retrain.py</code></td><td>Drift-triggered retraining with 3 strategies</td></tr>
+    <tr><td><code>serve.py</code></td><td>FastAPI REST endpoint for real-time session scoring</td></tr>
+    <tr><td><code>batch_infer.py</code></td><td>Batch scorer — scores a full CSV in one pass</td></tr>
+    <tr><td><code>plot_logs.py</code></td><td>HTML log visualizer — experiment metrics, drift log, latency, registry</td></tr>
+    <tr><td><code>src/config/config.py</code></td><td>All constants: thresholds, months, feature lists</td></tr>
+    <tr><td><code>src/data/loader.py</code></td><td>UCI dataset download; synthetic fallback</td></tr>
+    <tr><td><code>src/data/prepare.py</code></td><td>Temporal split: Feb–Oct = train, Nov–Dec = current</td></tr>
+    <tr><td><code>src/data/validate.py</code></td><td>Schema validation before any data touches the model</td></tr>
+    <tr><td><code>src/features/build_features.py</code></td><td>OHE, imputation, median persistence</td></tr>
+    <tr><td><code>src/models/train.py</code></td><td>LightGBM training with <code>scale_pos_weight</code> for imbalance</td></tr>
+    <tr><td><code>src/models/evaluate.py</code></td><td>Hold-out evaluation, promotion gates, slice analysis</td></tr>
+    <tr><td><code>src/pipeline/run_pipeline.py</code></td><td>12-stage orchestrator</td></tr>
+    <tr><td><code>src/monitoring/drift.py</code></td><td>Per-feature velocity drift detection</td></tr>
+    <tr><td><code>src/tracking/experiment.py</code></td><td>Appends every run to <code>logs/experiments.csv</code></td></tr>
+    <tr><td><code>src/registry/versioning.py</code></td><td>Model lifecycle: candidate → staging → production</td></tr>
+    <tr><td><code>src/utils/lineage.py</code></td><td>Records model ↔ data ↔ code ↔ environment links</td></tr>
+  </table>
+
+  <!-- BASELINE -->
+  <h2 class="section" id="baseline">Step 1 — baseline.py</h2>
+  <p><strong>Context:</strong> It is October. A junior data scientist takes a first look at the Feb–Oct dataset.</p>
+  <div class="callout warn">
+    <p>The code runs without errors. Every output looks plausible. The problems are invisible.</p>
+  </div>
+  <table>
+    <tr><th>#</th><th>Pitfall</th><th>What goes wrong</th></tr>
+    <tr><td>1</td><td>Hardcoded paths</td><td>Breaks on any machine except the author's</td></tr>
+    <tr><td>2</td><td>LabelEncoder on nominal categories</td><td><code>Month</code> treated as Feb(1) &lt; Mar(3) &lt; Oct(5) — a false ordinal scale</td></tr>
+    <tr><td>3</td><td>Rapid sweep sorted by Accuracy</td><td>92% accuracy model catches only 55–58% of actual buyers</td></tr>
+    <tr><td>4</td><td>Model selected by accuracy</td><td>~92% accuracy reported; 80–90 buyers missed per test batch (~$7,000+ cost)</td></tr>
+    <tr><td>5</td><td>No feature pipeline saved</td><td><code>LabelEncoder</code> trained on Feb–Oct months; will crash or silently misencode Nov/Dec</td></tr>
+    <tr><td>6</td><td>No experiment tracking</td><td>No record of config, split, or metric. Cannot reproduce or compare</td></tr>
+    <tr><td>7</td><td>No drift monitoring</td><td>Model goes live in November; nobody detects that feature distributions have shifted</td></tr>
+  </table>
+  <h3 class="subsection">Key output</h3>
+  <pre><code>What gets reported to stakeholders:
+  Accuracy : 91.8%  ← presented as the key result
+
+What doesn't get mentioned:
+  Recall on buyers: 55%  (45% of actual buyers missed)
+  Business cost: ~$7,000+ in missed conversions in the test batch alone</code></pre>
+
+  <!-- MODEL SELECTION -->
+  <h2 class="section" id="model-selection">Step 2 — model_selection.py</h2>
+  <p><strong>Context:</strong> Still October. The senior team runs a proper model comparison before building anything.</p>
+  <p>The evaluation framework is defined <strong>before</strong> any model runs: primary metric is F1 on the minority class (buyers), same stratified 80/20 split for all models, same imbalance handling, same preprocessing.</p>
+  <table>
+    <tr><th>Model</th><th>F1 (buyers)</th><th>Recall</th><th>Why</th></tr>
+    <tr><td>Logistic Regression</td><td>~0.68</td><td>~0.83</td><td>Linear boundary; struggles with PageValues threshold effect</td></tr>
+    <tr><td>Random Forest</td><td>~0.69</td><td>~0.69</td><td>Handles non-linearity; no sequential error correction</td></tr>
+    <tr><td>XGBoost</td><td>~0.69</td><td>~0.78</td><td>Sequential boosting; strong on boundary cases</td></tr>
+    <tr><td><strong>LightGBM</strong></td><td><strong>~0.67–0.76</strong></td><td><strong>~0.69</strong></td><td><strong>Leaf-wise growth; efficient on skewed PageValues distribution</strong></td></tr>
+  </table>
+  <p>LightGBM is selected for production. This script is the audit trail for that decision.</p>
+  <h3 class="subsection">What happens after deployment</h3>
+  <pre><code>Train (Feb-Oct) purchase rate  : 12.3%  (what the model learned)
+Post-deployment (Nov-Dec) rate : 20.7%  (what it will face)
+→ Holiday season brings 67% more purchase sessions.
+→ Feature distributions shift: PageValues, BounceRates, ExitRates.</code></pre>
+
+  <!-- MAIN -->
+  <h2 class="section" id="main">Step 3 — main.py</h2>
+  <p><strong>Context:</strong> October. All 12 stages run in sequence. The model is trained on Feb–Oct data and deployed at the end.</p>
+
+  <h2 class="section" id="stages">Pipeline Stages</h2>
+  <div class="stage-grid">
+    <div class="stage-card">
+      <div class="stage-num">Stage 0</div>
+      <div class="stage-body">
+        <div class="stage-title">Initialisation</div>
+        <div class="stage-desc">Sets random seed (42) and creates the directory structure. Seed is critical: same data + same seed = same model every run.</div>
+      </div>
+    </div>
+    <div class="stage-card">
+      <div class="stage-num">Stage 1</div>
+      <div class="stage-body">
+        <div class="stage-title">Data Loading</div>
+        <div class="stage-desc">Loads <code>data/train.csv</code> (Feb–Oct, 7,317 rows) and <code>data/current.csv</code> (Nov–Dec, 4,725 rows). The Nov–Dec data is loaded for monitoring only — it is <strong>not</strong> used for training.</div>
+      </div>
+    </div>
+    <div class="stage-card">
+      <div class="stage-num">Stage 2</div>
+      <div class="stage-body">
+        <div class="stage-title">Data Validation</div>
+        <div class="stage-desc">Checks schema, null rates, value ranges, and categorical domains before any model sees the data. Hard failures abort the pipeline. Soft warnings are logged.</div>
+      </div>
+    </div>
+    <div class="stage-card">
+      <div class="stage-num">Stage 3</div>
+      <div class="stage-body">
+        <div class="stage-title">Feature Engineering</div>
+        <div class="stage-desc">One-hot encodes <code>Month</code> and <code>VisitorType</code> (nominal, not ordinal). Imputes missing values using <strong>training-set medians</strong>, saved to <code>models/feature_pipeline.json</code>. At inference time, the same medians are loaded — not recomputed. This prevents training-serving skew.</div>
+      </div>
+    </div>
+    <div class="key-stage">
+    <div class="stage-card">
+      <div class="stage-num">Stage 4</div>
+      <div class="stage-body">
+        <div class="stage-title">Train/Test Split — Pre-Deployment Validation</div>
+        <div class="stage-desc">Splits the Feb–Oct data 80/20 with <code>stratify=y</code>. Both splits contain 12.3% buyers. The hold-out 20% is <strong>never touched during training</strong> — it is the pre-deployment quality gate.</div>
+      </div>
+    </div>
+    </div>
+    <div class="stage-card">
+      <div class="stage-num">Stage 5</div>
+      <div class="stage-body">
+        <div class="stage-title">Model Training</div>
+        <div class="stage-desc">Trains LightGBM on the 80% split. <code>scale_pos_weight = n_negative / n_positive ≈ 7.1</code> — every false negative is penalised 7× more than a false positive, matching the $85/$3 business cost ratio.</div>
+      </div>
+    </div>
+    <div class="key-stage">
+    <div class="stage-card">
+      <div class="stage-num">Stage 6</div>
+      <div class="stage-body">
+        <div class="stage-title">Pre-Deployment Evaluation</div>
+        <div class="stage-desc">Evaluates on the 20% hold-out only. Expected: F1 0.67–0.76, Recall 0.69–0.78, AUC-ROC 0.92–0.96, AUC-PR 0.72–0.80. Slice evaluation by <code>VisitorType</code> and <code>Month</code> reveals performance gaps.</div>
+      </div>
+    </div>
+    </div>
+    <div class="key-stage">
+    <div class="stage-card">
+      <div class="stage-num">Stage 7</div>
+      <div class="stage-body">
+        <div class="stage-title">Deployment Gates</div>
+        <div class="stage-desc">Hard thresholds: F1 ≥ 0.65, Recall ≥ 0.60, AUC-PR ≥ 0.60, AUC-ROC ≥ 0.85. If any gate fails, the pipeline stops. The model is not registered or served.</div>
+      </div>
+    </div>
+    </div>
+    <div class="stage-card">
+      <div class="stage-num">Stage 8</div>
+      <div class="stage-body">
+        <div class="stage-title">Experiment Tracking</div>
+        <div class="stage-desc">Appends the run's parameters and metrics to <code>logs/experiments.csv</code>. Every run is logged with a timestamp — the full history of all training runs is preserved.</div>
+      </div>
+    </div>
+    <div class="stage-card">
+      <div class="stage-num">Stage 9</div>
+      <div class="stage-body">
+        <div class="stage-title">Model Registry</div>
+        <div class="stage-desc">Saves the model as <code>models/model_YYYYMMDD_HHmmss_f1_X.XXX.pkl</code>. Promotes it: <code>candidate → staging → production</code>. Only production-status models are served by <code>serve.py</code>.</div>
+      </div>
+    </div>
+    <div class="key-stage">
+    <div class="stage-card">
+      <div class="stage-num">Stage 10</div>
+      <div class="stage-body">
+        <div class="stage-title">Post-Deployment Drift Monitoring</div>
+        <div class="stage-desc">The model is now live. Compares incoming Nov–Dec feature distributions against the Feb–Oct training baseline. Expected: PageValues +34%, ProductRelated +48%, BounceRates +16%, ExitRates +12% — all flagged as drift.</div>
+      </div>
+    </div>
+    </div>
+    <div class="stage-card">
+      <div class="stage-num">Stage 11</div>
+      <div class="stage-body">
+        <div class="stage-title">Batch Scoring</div>
+        <div class="stage-desc">Scores all 4,725 post-deployment sessions using the <strong>training-time feature pipeline</strong> (saved medians) — not the inference batch statistics. Logs predictions and latency.</div>
+      </div>
+    </div>
+    <div class="stage-card">
+      <div class="stage-num">Stage 12</div>
+      <div class="stage-body">
+        <div class="stage-title">Lineage Recording</div>
+        <div class="stage-desc">Records a full provenance snapshot in <code>logs/lineage.json</code>: model file, data files (with checksums), Python version, library versions, and git commit.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RETRAIN -->
+  <h2 class="section" id="retrain">Step 4 — retrain.py</h2>
+  <p><strong>Context:</strong> Late November. The model has been live for ~4 weeks. 4,725 post-deployment sessions have accumulated. Ground truth labels are available.</p>
+
+  <h3 class="subsection" id="trigger-rules">Four Trigger Rules</h3>
+  <table>
+    <tr><th>Rule</th><th>Condition</th><th>Why</th></tr>
+    <tr>
+      <td><span class="badge red">Rule 1</span></td>
+      <td>Any high-importance feature drifts</td>
+      <td>PageValues, BounceRates, ExitRates, ProductRelated drive &gt;60% of feature importance. One shift = model is stale.</td>
+    </tr>
+    <tr>
+      <td><span class="badge amber">Rule 2</span></td>
+      <td>≥ 2 features drift</td>
+      <td>One noisy column might be transient. Two simultaneous drifts is almost certainly a real shift.</td>
+    </tr>
+    <tr>
+      <td><span class="badge amber">Rule 3</span></td>
+      <td>F1 drops &gt; 5pp from baseline</td>
+      <td>Even without feature drift, concept drift can degrade performance. If F1 drops, retrain regardless.</td>
+    </tr>
+    <tr>
+      <td><span class="badge blue">Rule 4</span></td>
+      <td>Last retrain &lt; 14 days ago</td>
+      <td>Prevents over-reaction to daily noise. Use <code>--force</code> to override.</td>
+    </tr>
+  </table>
+
+  <h3 class="subsection" id="strategies">Three Retraining Strategies</h3>
+  <div class="strategy-grid">
+    <div class="strategy-card">
+      <div class="strategy-name">finetune</div>
+      <p>Warm-starts LightGBM: adds 150 new trees on top of the existing 500, trained only on Nov–Dec data.</p>
+      <div class="when">Best for: mild drift, tight compute budget</div>
+      <p style="margin-top:8px; color: var(--danger); font-size:12px;">Risk: may lose Feb–Oct patterns (catastrophic forgetting).</p>
+    </div>
+    <div class="strategy-card" style="border-color: var(--accent2);">
+      <div class="strategy-name" style="color: var(--accent2);">mixed &nbsp;&#11088; recommended</div>
+      <p>Pools 50% of original Feb–Oct data with 100% of Nov–Dec data. Trains a fresh model from scratch.</p>
+      <div class="when">Best for: seasonal drift — model must work on both normal and holiday traffic</div>
+    </div>
+    <div class="strategy-card">
+      <div class="strategy-name">reexperiment</div>
+      <p>Runs a hyperparameter grid search (4 configs) on the combined dataset. Picks best by F1, then reruns the full pipeline.</p>
+      <div class="when">Best for: F1 has degraded significantly — original hyperparameters may be stale</div>
+    </div>
+  </div>
+
+  <!-- SERVING -->
+  <h2 class="section" id="realtime">Real-time Serving</h2>
+  <pre><code>uvicorn serve:app --reload --port 8000
+<span class="cm"># Open http://localhost:8000/docs for the Swagger UI</span></code></pre>
+  <p>POST a single session to <code>/predict</code>:</p>
+  <pre><code>{
+  <span class="st">"Administrative"</span>: 2,
+  <span class="st">"ProductRelated"</span>: 15,
+  <span class="st">"ProductRelated_Duration"</span>: 450.0,
+  <span class="st">"BounceRates"</span>: 0.02,
+  <span class="st">"ExitRates"</span>: 0.04,
+  <span class="st">"PageValues"</span>: 12.5,
+  <span class="st">"Month"</span>: <span class="st">"Nov"</span>,
+  <span class="st">"VisitorType"</span>: <span class="st">"Returning_Visitor"</span>,
+  <span class="st">"Weekend"</span>: <span class="kw">false</span>
+}</code></pre>
+  <p>Response:</p>
+  <pre><code>{
+  <span class="st">"predicted_purchase"</span>: 1,
+  <span class="st">"probability"</span>: 0.7231,
+  <span class="st">"intent_level"</span>: <span class="st">"high"</span>,
+  <span class="st">"model_version"</span>: <span class="st">"20261015_143022"</span>,
+  <span class="st">"latency_ms"</span>: 4.2
+}</code></pre>
+
+  <h2 class="section" id="batch">Batch Inference</h2>
+  <pre><code>python batch_infer.py --input data/current.csv --output data/scored.csv</code></pre>
+  <p>Scores the full CSV in a single <code>model.predict(X)</code> call. Output columns: <code>predicted_purchase</code>, <code>purchase_probability</code>, <code>intent_level</code>, <code>model_version</code>, <code>scored_at</code>.</p>
+
+  <!-- OUTPUT FILES -->
+  <h2 class="section" id="outputs">Output Files</h2>
+  <table>
+    <tr><th>File</th><th>Contents</th></tr>
+    <tr><td><code>data/train.csv</code></td><td>Feb–Oct training sessions (7,317 rows)</td></tr>
+    <tr><td><code>data/current.csv</code></td><td>Nov–Dec post-deployment sessions (4,725 rows)</td></tr>
+    <tr><td><code>models/feature_pipeline.json</code></td><td>Training-time medians and column schema for inference</td></tr>
+    <tr><td><code>models/registry.json</code></td><td>Model registry with lifecycle status</td></tr>
+    <tr><td><code>models/*.pkl</code></td><td>Versioned model files</td></tr>
+    <tr><td><code>logs/experiments.csv</code></td><td>Full run history: params + metrics + metadata</td></tr>
+    <tr><td><code>logs/drift.csv</code></td><td>Drift detection history per run</td></tr>
+    <tr><td><code>logs/latency.csv</code></td><td>Inference latency log</td></tr>
+    <tr><td><code>logs/lineage.json</code></td><td>Latest lineage snapshot</td></tr>
+    <tr><td><code>logs/retrain.csv</code></td><td>Retrain event history</td></tr>
+  </table>
+
+  <!-- PRODUCTION MAPPING -->
+  <h2 class="section" id="production">What This Replaces in Production</h2>
+  <table>
+    <tr><th>This file</th><th>Production tool</th></tr>
+    <tr><td><code>logs/experiments.csv</code></td><td>MLflow, Weights &amp; Biases, Neptune</td></tr>
+    <tr><td><code>models/registry.json</code></td><td>MLflow Model Registry, SageMaker Model Registry</td></tr>
+    <tr><td><code>retrain.py</code> rules</td><td>Airflow DAG, Prefect Flow, Kubeflow Pipeline</td></tr>
+    <tr><td><code>logs/drift.csv</code></td><td>Evidently AI, WhyLabs, Arize</td></tr>
+    <tr><td><code>serve.py</code></td><td>BentoML, Seldon, SageMaker endpoint</td></tr>
+    <tr><td><code>src/utils/lineage.py</code></td><td>DVC, MLflow artifact tracking</td></tr>
+  </table>
+
+</main>
+
+<script>
+  const sections = document.querySelectorAll('[id]');
+  const links = document.querySelectorAll('.sidebar a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`.sidebar a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

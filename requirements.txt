@@ -1,0 +1,26 @@
+# E-Commerce MLOps Pipeline – Dependencies
+# ==========================================
+# Pin minor versions to ensure reproducible environments.
+# "Works on my machine" stops being an excuse when everyone installs from this file.
+#
+# Install: pip install -r requirements.txt
+
+# ── ML / Data ─────────────────────────────────────────────────────────────────
+scikit-learn>=1.3,<2.0
+numpy>=1.24,<2.0
+pandas>=2.0,<3.0
+lightgbm>=4.0,<5.0         # gradient boosting — production model
+xgboost>=2.0,<3.0          # gradient boosting — compared in model_selection.py
+# pycaret                   # referenced conceptually in baseline.py; install separately
+#                            # if you want to run PyCaret's compare_models() directly.
+#                            # Note: PyCaret requires Python 3.9–3.11 (not 3.12+)
+
+# ── Data acquisition ──────────────────────────────────────────────────────────
+ucimlrepo>=0.0.3           # fetches UCI ML Repo datasets; graceful fallback if absent
+
+# ── Model Serving ─────────────────────────────────────────────────────────────
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.28,<1.0   # ASGI server for FastAPI
+
+# ── Serving validation (used by FastAPI request schemas) ──────────────────────
+pydantic>=2.0,<3.0
